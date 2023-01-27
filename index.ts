@@ -2,7 +2,7 @@ import { generateSummary } from "./generateSummary.ts";
 import { sanitizeContent } from "./SanitizeContent.ts";
 
 const ipfsURL =
-  "https://ipfs.everipedia.org/ipfs/QmZi8pYHsJVvHpdiv49mkdWahhEv3gEx7X5HGVVZWxzGed";
+  "https://ipfs.everipedia.org/ipfs/QmZw9dCDut294cG4Jvro5X3LzgBw9itevN7Vw1UXQaanvi";
 
 const wiki = await (await fetch(ipfsURL)).json();
 const content = wiki.content as string;
@@ -20,5 +20,5 @@ ${input}
 --------------------------------
 📝 SUMMARY:
 --------------------------------
-${summary}
+${summary.map((s) => `[${s.length} Chars] ${s}`).join("\n\n")}
 `);
