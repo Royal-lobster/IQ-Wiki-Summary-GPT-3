@@ -6,10 +6,11 @@ import {
 import { MAX_TRIES, OPENAI_API_KEY } from "./constants.ts";
 import { logExecutionSummary } from "./logGenerationSummary.ts";
 
-const configuration = new Configuration({
-  apiKey: OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAIApi(
+  new Configuration({
+    apiKey: OPENAI_API_KEY,
+  })
+);
 
 export const generateSummary = async (
   content: string,
@@ -21,18 +22,21 @@ export const generateSummary = async (
   let allGeneratedSummaries: string[] = [];
   let tries = 0;
 
+  const prompt = `
+  Content about ${title}:
+  ${content} 
+  
+  Generate wikipedia style summary under 210 characters on topic "${
+    isAboutPerson ? "who" : "what"
+  } is ${title} ?".
+`;
+
   do {
     tries++;
+
     completion = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: `
-      Content about ${title}:
-      ${content} 
-      
-      Generate wikipedia style summary under 210 characters on topic "${
-        isAboutPerson ? "who" : "what"
-      } is ${title} ?".
-    `,
+      prompt,
       n: 3,
       max_tokens: 255,
     });
