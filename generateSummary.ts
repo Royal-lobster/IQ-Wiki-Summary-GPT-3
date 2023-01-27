@@ -31,21 +31,29 @@ export const generateSummary = async (
   } is ${title} ?".
 `;
 
-  do {
-    tries++;
+  try {
+    do {
+      tries++;
+      completion = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt,
+        n: 3,
+        max_tokens: 255,
+      });
+      const choices = completion.data.choices.map((c) => c.text as string);
+      validChoices = choices.filter((c) => c.length <= 255);
+      allGeneratedSummaries = [...allGeneratedSummaries, ...choices];
+    } while (validChoices.length === 0 && tries <= MAX_TRIES);
 
-    completion = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt,
-      n: 3,
-      max_tokens: 255,
-    });
-
-    const choices = completion.data.choices.map((c) => c.text as string);
-    validChoices = choices.filter((c) => c.length <= 255);
-    allGeneratedSummaries = [...allGeneratedSummaries, ...choices];
-  } while (validChoices.length === 0 && tries <= MAX_TRIES);
-
-  logExecutionSummary(content, allGeneratedSummaries, tries, completion);
+    await logExecutionSummary(
+      content,
+      allGeneratedSummaries,
+      tries,
+      completion
+    );
+  } catch (e) {
+    const { response } = e;
+    console.error(response?.data.error);
+  }
   return validChoices.map((c) => c.trim().replaceAll("\\n", " "));
 };
